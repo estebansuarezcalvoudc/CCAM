@@ -38,7 +38,9 @@ def show_metrics(confussion_matrix) -> None:
     print(f"Precision: {precision:.4f}")
 
 
-def get_dataset(number_of_features: int = 8):
+def get_dataset(
+    number_of_features: int = 8, dataset_size: int = 1000, test_size: float = 0.2
+):
     algorithm_globals.random_seed = RANDOM_SEED
 
     spambase = fetch_ucirepo(id=94)
@@ -51,18 +53,18 @@ def get_dataset(number_of_features: int = 8):
     X_8features = PCA(n_components=number_of_features).fit_transform(X)
 
     X_subset, _, y_subset, _ = train_test_split(
-        X_8features, y, train_size=1000, random_state=RANDOM_SEED, stratify=y
+        X_8features, y, train_size=dataset_size, random_state=RANDOM_SEED, stratify=y
     )
 
-    X_rest, X_test, y_rest, y_test = train_test_split(
-        X_subset, y_subset, test_size=0.2, random_state=RANDOM_SEED, stratify=y_subset
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_subset,
+        y_subset,
+        test_size=test_size,
+        random_state=RANDOM_SEED,
+        stratify=y_subset,
     )
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_rest, y_rest, test_size=0.1, random_state=RANDOM_SEED, stratify=y_rest
-    )
-
-    return X_train, y_train, X_test, y_test, X_val, y_val
+    return X_train, y_train, X_test, y_test
 
 
 def evaluate_classifier(classifier, X_train, y_train, X_test, y_test) -> None:
