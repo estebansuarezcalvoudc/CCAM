@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 from qiskit_machine_learning.utils import algorithm_globals
 from sklearn.decomposition import PCA
@@ -78,3 +79,52 @@ def evaluate_classifier(classifier, X_train, y_train, X_test, y_test) -> None:
     cm = confusion_matrix(y_test, y_pred)
     show_metrics(cm)
     display_confussion_matrix(cm, title="Matriz de Confusión (test)")
+
+
+class ExperimentLogger:
+    def __init__(self):
+        self._results = []
+
+    def log(
+        self,
+        feature_map_name,
+        ansatz_name,
+        optimizer_name,
+        classifier,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+    ):
+        y_pred_train = classifier.predict(X_train)
+        acc_train = accuracy_score(y_train, y_pred_train)
+        prec_train = precision_score(y_train, y_pred_train, zero_division=0)
+
+        y_pred_test = classifier.predict(X_test)
+        acc_test = accuracy_score(y_test, y_pred_test)
+        prec_test = precision_score(y_test, y_pred_test, zero_division=0)
+
+        self._results.append(
+            {
+                "Feature Map": feature_map_name,
+                "Ansatz": ansatz_name,
+                "Optimizer": optimizer_name,
+                "Accuracy (train)": acc_train,
+                "Precision (train)": prec_train,
+                "Accuracy (test)": acc_test,
+                "Precision (test)": prec_test,
+            }
+        )
+
+        print(
+            f"--- Resultados para {feature_map_name} + {ansatz_name} + {optimizer_name} ---"
+        )
+        print(f"Train - Accuracy: {acc_train:.4f}, Precision: {prec_train:.4f}")
+        print(f"Test  - Accuracy: {acc_test:.4f}, Precision: {prec_test:.4f}")
+
+        cm = confusion_matrix(y_test, y_pred_test)
+        display_confussion_matrix(cm, title=f"Matriz de confusión (Test)")
+
+    @property
+    def results_df(self):
+        return pd.DataFrame(self._results)
